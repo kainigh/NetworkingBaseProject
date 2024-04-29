@@ -11,8 +11,22 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
+	std::cout << "Please enter the IP address: ";
+
+	string host;
+	cin >> host;
+
+	std::cout << endl << "Please enter the Port number: ";
+
+	int portnumber;
+	cin >> portnumber;
+
+	cout << endl;
+
+
+
 	IPaddress ip;
-	if (SDLNet_ResolveHost(&ip, "localhost", 4242) == -1) {
+	if (SDLNet_ResolveHost(&ip, host.c_str(), portnumber) == -1) {
 		cerr << "Resolve Host error: " << SDLNet_GetError() << endl;
 		SDLNet_Quit();
 		return 1;
@@ -25,7 +39,13 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	string message = "Hi there....Il faut beau";
+	cout << "Type your message here: ";
+
+	string message;
+	cin >> message;
+
+
+	//string message = "Hi there....Il faut beau";
 
 	int bytesSent = SDLNet_TCP_Send(clientSocket, message.c_str(), message.length() + 1);
 	if (bytesSent < message.length() + 1) {
