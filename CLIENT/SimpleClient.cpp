@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
 	string strPort;
 
 	const int popupwidth = 500, popupheight = 300;
-	InitWindow(popupwidth, popupheight, "My first chat window!");
+	InitWindow(popupwidth, popupheight, "Client chat window!");
 	SetTargetFPS(60);
 
 	bool btnAction = false;
@@ -164,8 +164,21 @@ int main(int argc, char* argv[]) {
 	}
 
 	
-	
-	//string message = "Hi there....Il faut beau";
+	const int width = 500, height = 750;
+	InitWindow(width, height, "My first chat window!");
+	SetTargetFPS(60);
+
+	while (!WindowShouldClose()) {
+		BeginDrawing();
+		ClearBackground(GRAY);
+		DrawText("Welcome to ChArtFX!", 220, 15, 25, WHITE);
+		DrawRectangle(20, 50, width - 40, height - 150, DARKGRAY);
+		DrawRectangle(20, height - 90, width - 40, 50, LIGHTGRAY);
+
+		EndDrawing();
+	}
+	CloseWindow();
+
 
 	
 	
