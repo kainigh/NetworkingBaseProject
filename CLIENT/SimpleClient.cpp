@@ -16,15 +16,22 @@ struct Message
 int main(int argc, char* argv[]) {
 
 	char hostIP[15] = "\0";
-	int port[5];
+	char port[15] = "\0";
 
-	int letterCount = 0;
+	int IPletterCount = 0;
+	int PortletterCount = 0;
+	string strIP;
+	string strPort;
 
-	const int popupwidth = 500, popupheight = 250;
+	const int popupwidth = 500, popupheight = 300;
 	InitWindow(popupwidth, popupheight, "My first chat window!");
 	SetTargetFPS(60);
 
-	Rectangle textBox = { 20, 50, popupwidth - 40, 50 };
+	bool btnAction = false;
+
+	Rectangle btnBounds = { 200, 220, 130, 50 };
+	Rectangle IPtextBox = { 20, 50, popupwidth - 40, 50 };
+	Rectangle PorttextBox = { 20, 150, popupwidth - 40, 50 };
 	bool mouseOnText = false;
 
 	if (SDLNet_Init() == -1) {
@@ -35,11 +42,18 @@ int main(int argc, char* argv[]) {
 	
 	while (!WindowShouldClose()) {
 
-		if (CheckCollisionPointRec(GetMousePosition(), textBox)) mouseOnText = true;
-		else mouseOnText = false;
+		if (CheckCollisionPointRec(GetMousePosition(), IPtextBox) || CheckCollisionPointRec(GetMousePosition(), PorttextBox)) 
+			mouseOnText = true;
+		else 
+			mouseOnText = false;
+
+	
+		
 
 		if (mouseOnText)
 		{
+			btnAction = false;
+
 			// Set the window's cursor to the I-Beam
 			SetMouseCursor(MOUSE_CURSOR_IBEAM);
 
@@ -49,61 +63,94 @@ int main(int argc, char* argv[]) {
 			while (key > 0)
 			{
 				// NOTE: Only allow keys in range [32..125]
-				if ((key >= 32) && (key <= 125))
+				if ((key >= 32) && (key <= 125) && CheckCollisionPointRec(GetMousePosition(), IPtextBox))
 				{
-					hostIP[letterCount] = (char)key;
-					hostIP[letterCount + 1] = '\0'; // Add null terminator at the end of the string.
-					letterCount++;
+					hostIP[IPletterCount] = (char)key;
+					hostIP[IPletterCount + 1] = '\0'; // Add null terminator at the end of the string.
+					IPletterCount++;
+				}
+
+				else if ((key >= 32) && (key <= 125) && CheckCollisionPointRec(GetMousePosition(), PorttextBox))
+				{
+					port[PortletterCount] = (char)key;
+					port[PortletterCount + 1] = '\0'; // Add null terminator at the end of the string.
+					PortletterCount++;
 				}
 
 				key = GetCharPressed();  // Check next character in the queue
+				
+
 			}
 
-			if (IsKeyPressed(KEY_BACKSPACE))
+			if (IsKeyPressed(KEY_BACKSPACE) && CheckCollisionPointRec(GetMousePosition(), IPtextBox))
 			{
-				letterCount--;
-				if (letterCount < 0) letterCount = 0;
-				hostIP[letterCount] = '\0';
+				IPletterCount--;
+				if (IPletterCount < 0) IPletterCount = 0;
+				hostIP[IPletterCount] = '\0';
+			}
+
+			if (IsKeyPressed(KEY_BACKSPACE) && CheckCollisionPointRec(GetMousePosition(), PorttextBox))
+			{
+				PortletterCount--;
+				if (PortletterCount < 0) PortletterCount = 0;
+				port[PortletterCount] = '\0';
 			}
 
 
 		}
 		else SetMouseCursor(MOUSE_CURSOR_DEFAULT);
 
+
 		BeginDrawing();
 		ClearBackground(GRAY);
 		DrawText("Welcome to ChArtFX!", 220, 15, 25, WHITE);
 
 		DrawText("Host IP: ", 20, 30, 20, WHITE);
-		DrawRectangleRec(textBox, DARKGRAY);
-
-		DrawText(hostIP, (int)textBox.x + 5, (int)textBox.y + 8, 40, MAROON);
+		DrawRectangleRec(IPtextBox, DARKGRAY);
+		DrawText(hostIP, (int)IPtextBox.x + 5, (int)IPtextBox.y + 8, 40, MAROON);
 
 		DrawText("Host Port Number: ", 20, 125, 20, WHITE);
-		DrawRectangle(20, 150, popupwidth - 40, 50, DARKGRAY);
+		DrawRectangleRec(PorttextBox, DARKGRAY);
+		DrawText(port, (int)PorttextBox.x + 5, (int)PorttextBox.y + 8, 40, MAROON);
+
+		DrawRectangleRec(btnBounds, WHITE); // Draw button frame
+		DrawText("Connect", btnBounds.x + 5, btnBounds.y + 5, 30, BLACK);
 
 		//DrawRectangle(20, popupheight - 90, popupwidth - 40, 50, LIGHTGRAY);
 
 		EndDrawing();
+
+		if (CheckCollisionPointRec(GetMousePosition(), btnBounds))
+		{
+			if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+			{
+				cout << "true" << endl;
+				btnAction = true;
+
+			}
+
+		}
+
+		if (btnAction)
+		{
+
+			//cout << "Connecting" << endl;
+			// TODO: Any desired action
+			strIP = hostIP;
+			strPort = port;
+
+
+			cout << strIP << "  " << port << endl;
+			CloseWindow();
+
+		}
+
 	}
-	CloseWindow();
-
-	std::cout << "Please enter the IP address: ";
-
-	string host;
-	cin >> host;
-
-	cout << endl << "Please enter the Port number: ";
-
-	int portnumber;
-	cin >> portnumber;
-
-	cout << endl;
-
-
+	
+	
 
 	IPaddress ip;
-	if (SDLNet_ResolveHost(&ip, host.c_str(), portnumber) == -1) {
+	if (SDLNet_ResolveHost(&ip, strIP.c_str(), stoi(strPort)) == -1) {
 		cerr << "Resolve Host error: " << SDLNet_GetError() << endl;
 		SDLNet_Quit();
 		return 1;
@@ -120,27 +167,11 @@ int main(int argc, char* argv[]) {
 	
 	//string message = "Hi there....Il faut beau";
 
-	const int width = 500, height = 750;
-	InitWindow(width, height, "My first chat window!");
-	SetTargetFPS(60);
+	
+	
 
-	while (!WindowShouldClose()) {
-		BeginDrawing();
-		ClearBackground(GRAY);
-		DrawText("Welcome to ChArtFX!", 220, 15, 25, WHITE);
-		DrawRectangle(20, 50, width - 40, height - 150, DARKGRAY);
-		DrawRectangle(20, height - 90, width - 40, 50, LIGHTGRAY);
-
-		EndDrawing();
-	}
-	CloseWindow();
-
-	string message;
-	cout << "Type your message here: ";
-
-	//getline(cin, message);
-
-	cin >> message;
+	string message = "Hi there";
+	
 
 
 	int bytesSent = SDLNet_TCP_Send(clientSocket, message.c_str(), message.length() + 1);
