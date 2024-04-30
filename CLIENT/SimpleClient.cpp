@@ -1,22 +1,99 @@
 #include <SDL.h>
 #include <SDL_net.h>
 #include <iostream>
-//#include <string>
+#include <string>
+#include <raylib.h>
+
 using namespace std;
 
+struct Message
+{
+	bool fromMe = false;
+	string content;
+};
+
+
 int main(int argc, char* argv[]) {
+
+	char hostIP[15] = "\0";
+	int port[5];
+
+	int letterCount = 0;
+
+	const int popupwidth = 500, popupheight = 250;
+	InitWindow(popupwidth, popupheight, "My first chat window!");
+	SetTargetFPS(60);
+
+	Rectangle textBox = { 20, 50, popupwidth - 40, 50 };
+	bool mouseOnText = false;
 
 	if (SDLNet_Init() == -1) {
 		cerr << "SDLNet_Init error: " << SDLNet_GetError() << endl;
 		return 1;
 	}
 
+	
+	while (!WindowShouldClose()) {
+
+		if (CheckCollisionPointRec(GetMousePosition(), textBox)) mouseOnText = true;
+		else mouseOnText = false;
+
+		if (mouseOnText)
+		{
+			// Set the window's cursor to the I-Beam
+			SetMouseCursor(MOUSE_CURSOR_IBEAM);
+
+			// Get char pressed (unicode character) on the queue
+			int key = GetCharPressed();
+
+			while (key > 0)
+			{
+				// NOTE: Only allow keys in range [32..125]
+				if ((key >= 32) && (key <= 125))
+				{
+					hostIP[letterCount] = (char)key;
+					hostIP[letterCount + 1] = '\0'; // Add null terminator at the end of the string.
+					letterCount++;
+				}
+
+				key = GetCharPressed();  // Check next character in the queue
+			}
+
+			if (IsKeyPressed(KEY_BACKSPACE))
+			{
+				letterCount--;
+				if (letterCount < 0) letterCount = 0;
+				hostIP[letterCount] = '\0';
+			}
+
+
+		}
+		else SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+
+		BeginDrawing();
+		ClearBackground(GRAY);
+		DrawText("Welcome to ChArtFX!", 220, 15, 25, WHITE);
+
+		DrawText("Host IP: ", 20, 30, 20, WHITE);
+		DrawRectangleRec(textBox, DARKGRAY);
+
+		DrawText(hostIP, (int)textBox.x + 5, (int)textBox.y + 8, 40, MAROON);
+
+		DrawText("Host Port Number: ", 20, 125, 20, WHITE);
+		DrawRectangle(20, 150, popupwidth - 40, 50, DARKGRAY);
+
+		//DrawRectangle(20, popupheight - 90, popupwidth - 40, 50, LIGHTGRAY);
+
+		EndDrawing();
+	}
+	CloseWindow();
+
 	std::cout << "Please enter the IP address: ";
 
 	string host;
 	cin >> host;
 
-	std::cout << endl << "Please enter the Port number: ";
+	cout << endl << "Please enter the Port number: ";
 
 	int portnumber;
 	cin >> portnumber;
@@ -39,13 +116,32 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	cout << "Type your message here: ";
+	
+	
+	//string message = "Hi there....Il faut beau";
+
+	const int width = 500, height = 750;
+	InitWindow(width, height, "My first chat window!");
+	SetTargetFPS(60);
+
+	while (!WindowShouldClose()) {
+		BeginDrawing();
+		ClearBackground(GRAY);
+		DrawText("Welcome to ChArtFX!", 220, 15, 25, WHITE);
+		DrawRectangle(20, 50, width - 40, height - 150, DARKGRAY);
+		DrawRectangle(20, height - 90, width - 40, 50, LIGHTGRAY);
+
+		EndDrawing();
+	}
+	CloseWindow();
 
 	string message;
+	cout << "Type your message here: ";
+
+	//getline(cin, message);
+
 	cin >> message;
 
-
-	//string message = "Hi there....Il faut beau";
 
 	int bytesSent = SDLNet_TCP_Send(clientSocket, message.c_str(), message.length() + 1);
 	if (bytesSent < message.length() + 1) {
