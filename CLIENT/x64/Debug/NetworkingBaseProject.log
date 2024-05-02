@@ -1,7 +1,7 @@
 ﻿  SimpleClient.cpp
-C:\Users\kai.nigh\Documents\GitHub\NetworkingBaseProject\CLIENT\SimpleClient.cpp(117,52): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\kai.nigh\Documents\GitHub\NetworkingBaseProject\CLIENT\SimpleClient.cpp(117,35): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\kai.nigh\Documents\GitHub\NetworkingBaseProject\CLIENT\SimpleClient.cpp(190,82): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\kai.nigh\Documents\GitHub\NetworkingBaseProject\CLIENT\SimpleClient.cpp(119,52): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\kai.nigh\Documents\GitHub\NetworkingBaseProject\CLIENT\SimpleClient.cpp(119,35): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\kai.nigh\Documents\GitHub\NetworkingBaseProject\CLIENT\SimpleClient.cpp(213,83): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   NetworkingBaseProject.vcxproj -> C:\Users\kai.nigh\Documents\GitHub\NetworkingBaseProject\CLIENT\x64\Debug\SimpleClient.exe
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.

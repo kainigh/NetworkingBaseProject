@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 #include <raylib.h>
-
+#include <vector>
 using namespace std;
 
 struct Message
@@ -14,6 +14,8 @@ struct Message
 
 
 int main(int argc, char* argv[]) {
+
+	vector<Message> log{Message{false, "Waiting for someone to talk to..."}};
 
 	char hostIP[15] = "\0";
 	char port[15] = "\0";
@@ -149,6 +151,7 @@ int main(int argc, char* argv[]) {
 	
 	
 
+
 	IPaddress ip;
 	if (SDLNet_ResolveHost(&ip, strIP.c_str(), stoi(strPort)) == -1) {
 		cerr << "Resolve Host error: " << SDLNet_GetError() << endl;
@@ -162,53 +165,88 @@ int main(int argc, char* argv[]) {
 		SDLNet_Quit();
 		return 1;
 	}
-
+	SDLNet_SocketSet set = SDLNet_AllocSocketSet(1);
+	SDLNet_AddSocket(set, reinterpret_cast<SDLNet_GenericSocket>(clientSocket));
 	
 	const int width = 500, height = 750;
-	InitWindow(width, height, "My first chat window!");
+	InitWindow(width, height, "Client chat window!");
 	SetTargetFPS(60);
+	string typing;
 
 	while (!WindowShouldClose()) {
 		BeginDrawing();
 		ClearBackground(GRAY);
 		DrawText("Welcome to ChArtFX!", 220, 15, 25, WHITE);
 		DrawRectangle(20, 50, width - 40, height - 150, DARKGRAY);
+		//DrawRectangle(20, height - 90, width - 40, 50, LIGHTGRAY);
+
+		if (SDLNet_CheckSockets(set, 0) != 0) {
+			char buffer[1024];
+			int bytesRead = SDLNet_TCP_Recv(clientSocket, buffer, sizeof(buffer));
+			if (bytesRead > 0) {
+				std::cout << "Incoming message: " << buffer << endl;
+
+				log.push_back(Message{ false, buffer });
+			}
+		}
+
+		for (int msg = 0; msg < log.size(); msg++)
+		{
+			DrawText(log[msg].content.c_str(), 30, 75 + (msg * 30), 15, log[msg].fromMe ? SKYBLUE : PURPLE);
+		}
+
+
 		DrawRectangle(20, height - 90, width - 40, 50, LIGHTGRAY);
+
+		int inputChar = GetCharPressed();
+		if (inputChar != 0) //A character is pressed on the keyboard
+		{
+			typing += static_cast<char>(inputChar);
+		}
+		if (typing.size() > 0)
+		{
+			if (IsKeyPressed(KEY_BACKSPACE)) typing.pop_back();
+			else if (IsKeyPressed(KEY_ENTER))
+			{
+				//Send the message typing to the server here!
+				log.push_back(Message{ true, typing });
+				int bytesSent = SDLNet_TCP_Send(clientSocket, typing.c_str(), typing.length() + 1);
+				if (bytesSent < typing.length() + 1) {
+					cerr << "SDLNet TCP Send error: " << SDLNet_GetError() << endl;
+					SDLNet_TCP_Close(clientSocket);
+					SDLNet_Quit();
+					return 1;
+				}
+
+				typing.clear();
+			}
+
+			DrawText(typing.c_str(), 30, height - 75, 25, DARKBLUE);
+		}
+
+		
 
 		EndDrawing();
 	}
 	CloseWindow();
-
-
-	
-	
-
-	string message = "Hi there";
+	//string message = "Hi there";
 	
 
 
-	int bytesSent = SDLNet_TCP_Send(clientSocket, message.c_str(), message.length() + 1);
-	if (bytesSent < message.length() + 1) {
+	/*int bytesSent = SDLNet_TCP_Send(clientSocket, typing.c_str(), typing.length() + 1);
+	if (bytesSent < typing.length() + 1) {
 		cerr << "SDLNet TCP Send error: " << SDLNet_GetError() << endl;
 		SDLNet_TCP_Close(clientSocket);
 		SDLNet_Quit();
 		return 1;
-	}
+	}*/
 
-	cout << "Sent " << bytesSent << " bytes to the server !" << std::endl;
+	//cout << "Sent " << bytesSent << " bytes to the server !" << std::endl;
 	//SDLNet_TCP_Close(clientSocket);
 	//SDLNet_Quit();
 
-	char buffer[1024];
-	int bytesRead = SDLNet_TCP_Recv(clientSocket, buffer, sizeof(buffer));
-	if (bytesRead <= 0) {
-		cerr << "SDLNet TCP Recv error: " << SDLNet_GetError() << endl;
-		SDLNet_TCP_Close(clientSocket);
-		SDLNet_Quit();
-		return 1;
-	}
-
-	cout << "Incoming response: " << buffer << endl;
+	
+	//cout << "Incoming response: " << buffer << endl;
 
 
 
